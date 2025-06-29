@@ -1,0 +1,7 @@
+class NewPostData {
+
+    func newPost () {
+        print("New Post")
+    }
+
+}
