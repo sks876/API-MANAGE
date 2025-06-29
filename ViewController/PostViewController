@@ -1,0 +1,36 @@
+import UIKit
+
+class PostViewController: UIViewController, UITableViewDataSource {
+    let tableView = UITableView()
+    let viewModel = PostViewModel()
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        title = "Posts"
+        setupTableView()
+
+        viewModel.onDataUpdated = {
+            self.tableView.reloadData()
+        }
+
+        viewModel.fetchPosts()
+    }
+
+    func setupTableView() {
+        view.addSubview(tableView)
+        tableView.frame = view.bounds
+        tableView.dataSource = self
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+    }
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return viewModel.posts.count
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let post = viewModel.posts[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        cell.textLabel?.text = post.title
+        return cell
+    }
+}

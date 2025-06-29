@@ -1,0 +1,63 @@
+import Foundation
+
+class PostViewModel {
+    var posts: [Post] = []
+    var onUpdate: (() -> Void)?
+    
+    let baseURL = "https://jsonplaceholder.typicode.com/posts"
+
+    func fetchPosts() {
+        APIService.shared.request(url: baseURL, method: .GET) { [weak self] (result: Result<[Post], Error>) in
+            switch result {
+            case .success(let postList):
+                self?.posts = postList
+                DispatchQueue.main.async {
+                    self?.onUpdate?()
+                }
+            case .failure(let error):
+                print("GET Error:", error)
+            }
+        }
+    }
+
+    func addPost(title: String, body: String, userId: Int) {
+        let newPost = Post(userId: userId, id: nil, title: title, body: body)
+        guard let jsonData = try? JSONEncoder().encode(newPost) else { return }
+
+        APIService.shared.request(url: baseURL, method: .POST, body: jsonData) { (result: Result<Post, Error>) in
+            switch result {
+            case .success(let post):
+                print("POST Success:", post)
+            case .failure(let error):
+                print("POST Error:", error)
+            }
+        }
+    }
+
+    func updatePost(postId: Int, title: String, body: String) {
+        let updatedPost = Post(userId: 1, id: postId, title: title, body: body)
+        guard let jsonData = try? JSONEncoder().encode(updatedPost) else { return }
+
+        let updateURL = "\(baseURL)/\(postId)"
+        APIService.shared.request(url: updateURL, method: .PUT, body: jsonData) { (result: Result<Post, Error>) in
+            switch result {
+            case .success(let post):
+                print("PUT Success:", post)
+            case .failure(let error):
+                print("PUT Error:", error)
+            }
+        }
+    }
+
+    func deletePost(postId: Int) {
+        let deleteURL = "\(baseURL)/\(postId)"
+        APIService.shared.request(url: deleteURL, method: .DELETE) { (result: Result<Post, Error>) in
+            switch result {
+            case .success(_):
+                print("DELETE Success")
+            case .failure(let error):
+                print("DELETE Error:", error)
+            }
+        }
+    }
+}
